@@ -1,0 +1,12 @@
+FROM mariadb:10.6
+
+ENV MYSQL_DATABASE=mariadb
+ENV MYSQL_USER=manager
+ENV MYSQL_PASSWORD=managerPassword
+ENV MYSQL_ROOT_PASSWORD=rootPassword
+
+ADD ./db/conf /etc/mysql/conf.d
+
+EXPOSE 3306
+
+CMD ["mysqld"]

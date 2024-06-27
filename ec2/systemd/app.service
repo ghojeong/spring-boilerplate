@@ -1,0 +1,10 @@
+[Unit]
+Description=API Server
+
+[Service]
+ExecStart=/bin/bash -c "exec java -jar -Dserver.port=8080 -Xms4000m -Xmx8000m -Dspring.profiles.active=prod /home/ec2-user/application.jar"
+WorkingDirectory=/home/ec2-user
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

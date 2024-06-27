@@ -1,0 +1,49 @@
+spring:
+  threads:
+    virtual:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    defer-datasource-initialization: false
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+        hbm2ddl:
+          auto: none
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: 500
+  datasource-log:
+    url: ${ETC_DATASOURCE_URL}
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: ${ETC_DATASOURCE_USERNAME}
+    password: ${ETC_DATASOURCE_PASSWORD}
+    maximum-pool-size: 500
+logging:
+  config: classpath:log4j2-prod.yml
+management:
+  info:
+    git:
+      mode: full
+    java:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+security:
+  jwt:
+    token:
+      issuer: security.jwt.token.issuer
+      secret-key: pyro-secret-key
+      access-expire-length: 864000000
+      refresh-expire-length: 31622400000

@@ -1,0 +1,9 @@
+[Unit]
+Description=Blue Green
+
+[Service]
+ExecStart=/bin/bash -c "exec java -jar -Dserver.port=8081 -Xms2048m -Xmx4096m -Dspring.profiles.active=prod /home/ec2-user/application.jar"
+WorkingDirectory=/home/ec2-user/blue-green
+
+[Install]
+WantedBy=multi-user.target

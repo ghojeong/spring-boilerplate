@@ -1,0 +1,67 @@
+= Spring API
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+[[overview-http-verbs]]
+== DateTime Format 정리
+
+일시를 표시하기 위한 String 은 변수명에 따라 다음과 같은 모양을 가집니다.
+
+|===
+| 변수명 | 일시 양식
+
+| `*At`
+| `yyyy-MM-dd'T'HH:mm:ssXXX`
+
+| `*Date`
+| `yyyy-MM-dd`
+
+| `*Time`
+| `HH:mm`
+
+|===
+
+[[path]]
+== Auth API
+
+=== 회원가입 (Public)
+
+operation::signup[snippets='http-request,request-fields,http-response,response-fields']
+
+=== 회원탈퇴 (Private)
+
+operation::delete-my-user[snippets='http-request,http-response,response-fields']
+
+=== Log In (Public)
+
+회원가입되어 있지 않은 회원에게는 401 Unauthorized 예외를 반환한다.
+
+operation::login[snippets='http-request,request-fields,http-response,response-fields']
+
+=== Refresh Token (Private)
+
+operation::refresh-token[snippets='http-request,request-fields,http-response,response-fields']
+
+=== Logout (Private)
+
+operation::logout[snippets='http-request,request-fields,http-response,response-fields']
+
+== User API
+
+=== 내 계정정보 조회 (Private)
+
+operation::fetch-my-user[snippets='http-request,http-response,response-fields']
+
+=== 내 계정정보 수정 (Private)
+
+operation::update-my-user[snippets='http-request,request-fields,http-response,response-fields']
+
+== Image API
+
+=== Image Upload URL 생성 (Private)
+
+operation::fetch-image-upload-url[snippets='http-request,http-response,response-fields']

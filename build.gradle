@@ -1,0 +1,101 @@
+buildscript {
+    ext {
+        snippetsDir = file("build/generated-snippets")
+    }
+}
+
+plugins {
+    id "java"
+    id "org.springframework.boot" version "3.3.0"
+    id "io.spring.dependency-management" version "1.1.5"
+    id "com.gorylenko.gradle-git-properties" version "2.4.2"
+    id "org.asciidoctor.jvm.convert" version "4.0.2"
+    id "io.freefair.lombok" version "8.6"
+}
+
+java {
+    sourceCompatibility = "21"
+    archivesBaseName = "application"
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    configureEach {
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+    }
+    asciidoctorExt
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // spring
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+
+    // test
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.security:spring-security-test"
+
+    // rest docs
+    testImplementation "org.springframework.restdocs:spring-restdocs-restassured"
+    asciidoctorExt "org.springframework.restdocs:spring-restdocs-asciidoctor"
+
+    // log
+    implementation "org.springframework.boot:spring-boot-starter-log4j2"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
+
+    // db
+    runtimeOnly "com.h2database:h2"
+    runtimeOnly "org.mariadb.jdbc:mariadb-java-client"
+
+    // jwt
+    implementation "com.auth0:java-jwt:4.4.0"
+
+    // firebase
+    implementation "com.google.firebase:firebase-admin:9.3.0"
+}
+
+test {
+    useJUnitPlatform()
+    jvmArgs '-Xshare:off'
+    outputs.dir snippetsDir
+}
+asciidoctor {
+    inputs.dir snippetsDir
+    configurations "asciidoctorExt"
+    forkOptions {
+        jvmArgs("--add-opens",
+                "java.base/sun.nio.ch=ALL-UNNAMED",
+                "--add-opens",
+                "java.base/java.io=ALL-UNNAMED")
+    }
+    dependsOn test
+}
+bootJar {
+    dependsOn asciidoctor
+    from(asciidoctor) {
+        into "static/docs"
+    }
+}
+tasks.register('createDocument', Copy) {
+    dependsOn asciidoctor
+    from file("build/docs/asciidoc")
+    into file("src/main/resources/static/docs")
+}
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += [
+            "-Werror",
+            "-Xlint:all",
+            "-Xlint:-serial"
+    ]
+    options.deprecation = true
+}
