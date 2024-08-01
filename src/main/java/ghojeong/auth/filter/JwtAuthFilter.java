@@ -6,6 +6,9 @@ import ghojeong.common.dto.response.ExceptionResponse;
 import ghojeong.common.exception.ForbiddenException;
 import ghojeong.common.exception.UnauthorizedException;
 import ghojeong.log.service.ApiLogService;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,10 +19,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -35,58 +34,60 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
+    protected boolean shouldNotFilter(final HttpServletRequest request) {
+        final String path = request.getServletPath();
         return !path.startsWith("/v")
                 || path.startsWith("/login");
     }
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final FilterChain filterChain
+    ) throws IOException {
         final long start = System.currentTimeMillis();
-        ContentCachingRequestWrapper cachedRequest =
+        final ContentCachingRequestWrapper cachedRequest =
                 new ContentCachingRequestWrapper(request);
-        ContentCachingResponseWrapper cachedResponse =
+        final ContentCachingResponseWrapper cachedResponse =
                 new ContentCachingResponseWrapper(response);
-        doFilter(cachedRequest, cachedResponse, filterChain);
-        final long duration = System.currentTimeMillis() - start;
         try {
+            doFilter(cachedRequest, cachedResponse, filterChain);
+        } catch (final Exception e) {
+            logger.error(e);
+        } finally {
+            final long duration = System.currentTimeMillis() - start;
             apiLogService.saveApiLog(
                     cachedRequest,
                     cachedResponse,
                     duration
             );
-        } catch (Exception e) {
-            logger.error(e);
         }
         cachedResponse.copyBodyToResponse();
     }
 
     private void doFilter(
-            ContentCachingRequestWrapper request,
-            ContentCachingResponseWrapper response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            final ContentCachingRequestWrapper request,
+            final ContentCachingResponseWrapper response,
+            final FilterChain filterChain
+    ) throws IOException {
         try {
             attemptAuthentication(request);
-        } catch (UnauthorizedException e) {
+            filterChain.doFilter(request, response);
+        } catch (final UnauthorizedException e) {
             writeResponse(response, e, UNAUTHORIZED);
-        } catch (ForbiddenException e) {
+        } catch (final ForbiddenException e) {
             writeResponse(response, e, FORBIDDEN);
-        } catch (Exception e) {
+        } catch (final Exception e) {
+            logger.error(e);
             writeResponse(response, e, INTERNAL_SERVER_ERROR);
         }
-        filterChain.doFilter(request, response);
     }
 
     private void attemptAuthentication(
-            ContentCachingRequestWrapper request
+            final ContentCachingRequestWrapper request
     ) {
-        String jwt = request.getHeader("Authorization");
+        final String jwt = request.getHeader("Authorization");
         if (jwt == null || jwt.isBlank()) {
             return;
         }
@@ -96,9 +97,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void writeResponse(
-            ContentCachingResponseWrapper response,
-            Exception exception,
-            HttpStatus httpStatus
+            final ContentCachingResponseWrapper response,
+            final Exception exception,
+            final HttpStatus httpStatus
     ) throws IOException {
         response.setStatus(httpStatus.value());
         jsonMapper.writeAsJson(

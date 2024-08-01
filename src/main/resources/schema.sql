@@ -33,9 +33,9 @@ CREATE TABLE `api_log`
     `parameter`            VARCHAR(1000),
     `user_agent`           VARCHAR(400),
     `auth_token`           VARCHAR(400),
-    `retodo_header`        VARCHAR(1000),
+    `request_header`        VARCHAR(1000),
     `response_header`      VARCHAR(400),
-    `retodo_body`          MEDIUMTEXT,
+    `request_body`          MEDIUMTEXT,
     `response_body`        MEDIUMTEXT,
     `created_at`           DATETIME          NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `creator`              VARCHAR(250)
