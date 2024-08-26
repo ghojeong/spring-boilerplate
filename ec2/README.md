@@ -36,6 +36,20 @@ sudo certbot --nginx -d apistage.ghojeong.net
 sudo certbot --nginx -d apidev.ghojeong.net
 ```
 
+### Amazon Linux dev 에만 할 설정
+
+```sh
+sudo dnf install cronie -y
+sudo systemctl enable crond.service
+sudo systemctl start crond.service
+
+sudo crontab -e
+```
+
+```txt
+0 9 * * 1 certbot renew
+```
+
 ## EC2 에 Service 로 등록
 
 - `/etc/systemd/system` 에 systemd/app.service 파일을 등록
