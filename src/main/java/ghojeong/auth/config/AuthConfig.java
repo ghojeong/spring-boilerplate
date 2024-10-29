@@ -1,6 +1,7 @@
 package ghojeong.auth.config;
 
 import ghojeong.auth.filter.JwtAuthFilter;
+import ghojeong.auth.filter.LoggingFilter;
 import ghojeong.auth.handler.LoggingAccessDeniedHandler;
 import ghojeong.auth.handler.LoggingAuthenticationEntryPoint;
 import ghojeong.auth.service.JwtAuthProvider;
@@ -39,30 +40,34 @@ public class AuthConfig {
     public SecurityFilterChain createFilterChain(
             HttpSecurity httpSecurity,
             JwtAuthFilter jwtAuthFilter,
+            LoggingFilter loggingFilter,
             LoggingAuthenticationEntryPoint authenticationEntryPoint,
             LoggingAccessDeniedHandler accessDeniedHandler
     ) throws Exception {
         return httpSecurity.headers(
-                        it -> it.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-                ).csrf(
-                        AbstractHttpConfigurer::disable
-                ).cors(
-                        it -> it.configurationSource(corsConfigurationSource())
-                ).httpBasic(
-                        AbstractHttpConfigurer::disable
-                ).formLogin(
-                        AbstractHttpConfigurer::disable
-                ).sessionManagement(
-                        it -> it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                ).exceptionHandling(
-                        it -> it.authenticationEntryPoint(authenticationEntryPoint)
-                                .accessDeniedHandler(accessDeniedHandler)
-                ).requestCache(
-                        it -> it.configure(httpSecurity)
-                ).addFilterBefore(jwtAuthFilter, HeaderWriterFilter.class)
-                .authorizeHttpRequests(
-                        it -> it.anyRequest().permitAll()
-                ).build();
+                it -> it.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
+        ).csrf(
+                AbstractHttpConfigurer::disable
+        ).cors(
+                it -> it.configurationSource(corsConfigurationSource())
+        ).httpBasic(
+                AbstractHttpConfigurer::disable
+        ).formLogin(
+                AbstractHttpConfigurer::disable
+        ).sessionManagement(
+                it -> it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        ).exceptionHandling(
+                it -> it.authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+        ).requestCache(
+                it -> it.configure(httpSecurity)
+        ).addFilterBefore(
+                jwtAuthFilter, HeaderWriterFilter.class
+        ).addFilterBefore(
+                loggingFilter, JwtAuthFilter.class
+        ).authorizeHttpRequests(
+                it -> it.anyRequest().permitAll()
+        ).build();
     }
 
     private CorsConfigurationSource corsConfigurationSource() {
